@@ -1,7 +1,4 @@
-use reqwest::{
-    blocking::{Client as reqClient},
-    header::AUTHORIZATION,
-};
+use reqwest::header::AUTHORIZATION;
 use std::env;
 use serde::{Serialize, Deserialize};
 use std::fmt;
@@ -34,7 +31,6 @@ impl fmt::Display for Agent {
 }
 
 fn myagent() -> Agent {
-
     let res: HasData = reqClient::new()
         .get(createpath("my/agent"))
         .header(AUTHORIZATION, format!("Bearer {}", apikey())).send().unwrap().json().unwrap();
@@ -51,11 +47,6 @@ fn myagent() -> Agent {
 
 
 
-
-
-
-
-
 fn main() {
     clearscreen::clear().unwrap();
     
@@ -66,9 +57,6 @@ fn main() {
     if choice == *String::from("Agent information") {
         println!("{}", myagent());
     }
-    
-    
-    
 }
 
 fn apikey() -> String {
