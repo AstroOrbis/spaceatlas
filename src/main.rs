@@ -9,10 +9,19 @@ fn createpath(path: &str) -> String {
     url
 }
 
+fn apikey() -> String {
+    let key: String = env::var("SPACETRADERSKEY").unwrap_or("".to_string());
+    if key.is_empty() {
+        panic!("The SPACETRADERSKEY environment variable is not set. Please follow the instructions at https://docs.spacetraders.io/quickstart/new-game to create a new Agent, and put your key in the aforementioned environment variable.")
+    }
+    key
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 struct HasData {
     data: Agent 
 }
+
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -31,19 +40,20 @@ impl fmt::Display for Agent {
 }
 
 fn myagent() -> Agent {
-    let res: HasData = reqClient::new()
+    let res: HasData = reqwest::blocking::Client::new()
         .get(createpath("my/agent"))
         .header(AUTHORIZATION, format!("Bearer {}", apikey())).send().unwrap().json().unwrap();
     
-    let out = Agent {
+    Agent {
         accountId: res.data.accountId,
         symbol: res.data.symbol,
         headquarters: res.data.headquarters,
         credits: res.data.credits
-    };
-    
-    out
+    }
 }
+
+
+
 
 
 
@@ -59,10 +69,3 @@ fn main() {
     }
 }
 
-fn apikey() -> String {
-    let key: String = env::var("SPACETRADERSKEY").unwrap_or("".to_string());
-    if key.len() == 0 {
-        panic!("The SPACETRADERSKEY environment variable is not set. Please follow the instructions at https://docs.spacetraders.io/quickstart/new-game to create a new Agent, and put your key in the aforementioned environment variable.")
-    }
-    key
-}
