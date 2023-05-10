@@ -1,6 +1,6 @@
 use reqwest::header::AUTHORIZATION;
+use serde::{Deserialize, Serialize};
 use std::env;
-use serde::{Serialize, Deserialize};
 use std::fmt;
 
 fn createpath(path: &str) -> String {
@@ -18,11 +18,9 @@ fn apikey() -> String {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct HasData {
-    data: Agent 
+struct HasAgentData {
+    data: Agent,
 }
-
-
 
 #[derive(Serialize, Deserialize, Debug)]
 #[allow(non_snake_case)]
@@ -35,37 +33,117 @@ struct Agent {
 
 impl fmt::Display for Agent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Agent {{ accountId: {}, symbol: {}, headquarters: {}, credits: {} }}", self.accountId, self.symbol, self.headquarters, self.credits)
+        write!(
+            f,
+            "\nYour Agent\n\nID: {}\nSymbol: {}\nHeadquarters: {}\nCredits: {}",
+            self.accountId, self.symbol, self.headquarters, self.credits
+        )
     }
 }
 
 fn myagent() -> Agent {
-    let res: HasData = reqwest::blocking::Client::new()
+    let res: HasAgentData = reqwest::blocking::Client::new()
         .get(createpath("my/agent"))
-        .header(AUTHORIZATION, format!("Bearer {}", apikey())).send().unwrap().json().unwrap();
-    
+        .header(AUTHORIZATION, format!("Bearer {}", apikey()))
+        .send()
+        .unwrap()
+        .json()
+        .unwrap();
+
     Agent {
         accountId: res.data.accountId,
         symbol: res.data.symbol,
         headquarters: res.data.headquarters,
-        credits: res.data.credits
+        credits: res.data.credits,
     }
 }
 
+/////////////////////////////////////////////
 
+#[derive(Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+struct Waypoint {
+    symbol: String,
+    r#type: String,
+    x: i32,
+    y: i32,
+}
 
+#[derive(Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+struct System {
+    symbol: String,
+    sectorSymbol: String,
+    r#type: String,
+    x: i32,
+    y: i32,
+    waypoints: Vec<Waypoint>,
+}
 
+#[derive(Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
+struct hasSystemData {
+    data: System,
+}
 
+#[derive(Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+struct SystemsList {
+    data: Vec<System>,
+}
+
+fn listsystems() -> SystemsList {
+    let res: SystemsList = reqwest::blocking::Client::new()
+        .get(createpath("systems"))
+        .header(AUTHORIZATION, format!("Bearer {}", apikey()))
+        .send()
+        .unwrap()
+        .json()
+        .unwrap();
+
+    res
+}
 
 fn main() {
     clearscreen::clear().unwrap();
-    
-    let choice: String = inquire::Select::new("What would you like to query?", vec![
-        "Agent information".to_string()
-    ]).prompt().unwrap();
-    
+
+    let choice: String = inquire::Select::new(
+        "What category would you like to query?",
+        vec!["Agent".to_string(), "Systems".to_string()],
+    )
+    .prompt()
+    .unwrap();
+
+    if choice == *String::from("Agent") {
+        agentmenu();
+    } else if choice == *String::from("Systems") {
+        systemsmenu()
+    }
+}
+
+fn agentmenu() {
+    let choice: String = inquire::Select::new(
+        "Which endpoint do you want to use?",
+        vec!["Agent information".to_string()],
+    )
+    .prompt()
+    .unwrap();
+
     if choice == *String::from("Agent information") {
         println!("{}", myagent());
     }
 }
 
+fn systemsmenu() {
+    let choice: String = inquire::Select::new(
+        "Which endpoint do you want to use?",
+        vec!["List systems".to_string()],
+    )
+    .prompt()
+    .unwrap();
+
+    if choice == *String::from("List systems") {
+        println!("{:#?}", listsystems());
+    }
+}
