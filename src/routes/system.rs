@@ -1,5 +1,4 @@
-use crate::tools::apikey::apikey;
-use crate::tools::createpath::createpath;
+use crate::tools::{apikey::apikey, createpath::createpath};
 use reqwest::header::AUTHORIZATION;
 use serde::{Deserialize, Serialize};
 
@@ -31,6 +30,9 @@ pub struct SystemsList {
     data: Vec<System>,
 }
 
+
+
+
 pub fn listsystems() -> SystemsList {
     let res: SystemsList = reqwest::blocking::Client::new()
         .get(createpath("systems"))
@@ -43,3 +45,24 @@ pub fn listsystems() -> SystemsList {
     res
 }
 
+pub fn getsystem() -> System {
+
+	let system = inquire::Text::new("Please enter the system identifier.").prompt().unwrap();
+
+	let res: hasSystemData = reqwest::blocking::Client::new()
+		.get(createpath(&format!("systems/{}", system)))
+		.send()
+		.unwrap()
+		.json()
+		.unwrap();
+
+	System {
+		symbol: res.data.symbol,
+		sectorSymbol: res.data.sectorSymbol,
+		r#type: res.data.r#type,
+		x: res.data.x,
+		y: res.data.y,
+		waypoints: res.data.waypoints,
+	}
+
+}
