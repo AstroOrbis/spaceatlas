@@ -30,9 +30,6 @@ pub struct SystemsList {
 	data: Vec<System>,
 }
 
-
-
-
 pub fn listsystems() -> SystemsList {
 	let res: SystemsList = reqwest::blocking::Client::new()
 		.get(createpath("systems"))
@@ -64,5 +61,73 @@ pub fn getsystem() -> System {
 		y: res.data.y,
 		waypoints: res.data.waypoints,
 	}
+
+}
+// These next few are only used in the listwaypoints() endpoint so far 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct WaypointTrait {
+	symbol: String,
+	name: String,
+	description: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct WaypointOrbital {
+	symbol: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Chart {
+	// The docs say this is here, but in practice it sometimes isn't
+	waypointSymbol: Option<String>,
+	submittedBy: String,
+	submittedOn: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Faction {
+	symbol: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct VerboseWaypoint {
+	symbol: String,
+	r#type: String,
+	systemSymbol: String,
+	x: i32,
+	y: i32,
+	orbitals: Vec<WaypointOrbital>,
+	faction: Option<Faction>, // Docs say it's here, it sometimes isn't
+	traits: Vec<WaypointTrait>,
+	chart: Option<Chart> // Docs say it's here, it sometimes isn't
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Meta {
+	total: i32,
+	page: i32,
+	limit: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct WaypointsList {
+	data: Vec<VerboseWaypoint>,
+	meta: Meta
+}
+
+
+
+pub fn listwaypoints() -> WaypointsList {
+
+	let system: String = inquire::Text::new("Please enter the system identifier.").prompt().unwrap();
+
+	let res: WaypointsList = reqwest::blocking::Client::new()
+		.get(createpath(&format!("systems/{}/waypoints", system)))
+		.send()
+		.unwrap()
+		.json()
+		.unwrap();
+
+	res
 
 }
