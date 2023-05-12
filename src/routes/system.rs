@@ -1,5 +1,5 @@
 use crate::tools::{apikey::apikey, createpath::createpath};
-use reqwest::header::AUTHORIZATION;
+use reqwest::{header::AUTHORIZATION, blocking as req};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -23,7 +23,7 @@ pub struct SystemsList {
 }
 
 pub fn listsystems() -> SystemsList {
-	let res: SystemsList = reqwest::blocking::Client::new()
+	let res: SystemsList = req::Client::new()
 		.get(createpath("systems"))
 		.header(AUTHORIZATION, format!("Bearer {}", apikey()))
 		.send()
@@ -38,7 +38,7 @@ pub fn getsystem() -> System {
 
 	let system = inquire::Text::new("Please enter the system identifier.").prompt().unwrap();
 
-	let res: hasSystemData = reqwest::blocking::Client::new()
+	let res: hasSystemData = req::Client::new()
 		.get(createpath(&format!("systems/{}", system)))
 		.send()
 		.unwrap()
@@ -55,7 +55,7 @@ pub fn getsystem() -> System {
 	}
 
 }
-// These next few are only used in the listwaypoints() endpoint so far 
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WaypointTrait {
 	symbol: String,
@@ -70,8 +70,7 @@ pub struct WaypointOrbital {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Chart {
-	// The docs say this is here, but in practice it sometimes isn't
-	waypointSymbol: Option<String>,
+	waypointSymbol: Option<String>, // The docs say this is here, but in practice it sometimes isn't
 	submittedBy: String,
 	submittedOn: String
 }
@@ -117,7 +116,7 @@ pub fn listwaypoints() -> WaypointsList {
 
 	let system: String = inquire::Text::new("Please enter the system identifier.").prompt().unwrap();
 
-	let res: WaypointsList = reqwest::blocking::Client::new()
+	let res: WaypointsList = req::Client::new()
 		.get(createpath(&format!("systems/{}/waypoints", system)))
 		.send()
 		.unwrap()
@@ -134,7 +133,7 @@ pub fn getwaypoint() -> Waypoint {
 	let (system, _) = waypoint.rsplit_once('-').unwrap();
 
 
-	let res: hasWaypointData = reqwest::blocking::Client::new()
+	let res: hasWaypointData = req::Client::new()
 		.get(createpath(&format!("systems/{}/waypoints/{}", system, waypoint)))
 		.send()
 		.unwrap()
@@ -151,5 +150,44 @@ pub fn getwaypoint() -> Waypoint {
 		faction: res.data.faction,
 		traits: res.data.traits,
 		chart: res.data.chart
+	}
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct hasMarketData {
+	data: Market
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Market {
+	symbol: String,
+	imports: Option<Vec<Product>>,
+	exports: Option<Vec<Product>>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Product {
+	symbol: String,
+	name: String,
+	description: String
+}
+
+pub fn getmarket() -> Market {
+
+	let waypoint: String = inquire::Text::new("Please enter the waypoint identifier.").prompt().unwrap();
+
+	let (system, _) = waypoint.rsplit_once('-').unwrap();
+
+	let res: hasMarketData = req::Client::new()
+		.get(createpath(&format!("systems/{}/waypoints/{}/market", system, waypoint)))
+		.send()
+		.unwrap()
+		.json()
+		.unwrap();
+
+	Market {
+		symbol: res.data.symbol,
+		imports: res.data.imports,
+		exports: res.data.exports
 	}
 }

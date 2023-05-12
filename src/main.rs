@@ -55,7 +55,8 @@ fn systemsmenu() {
 		"List systems".to_string(),
 		"Get system".to_string(),
 		"List waypoints".to_string(),
-		"Get waypoint".to_string()
+		"Get waypoint".to_string(),
+		"Get waypoint market".to_string()
 	];
 
 	let choice: String = easyselect(
@@ -71,5 +72,7 @@ fn systemsmenu() {
 		println!("{:#?}", listwaypoints());
 	} else if choice == menu[3] {
 		println!("{:#?}", getwaypoint());
+	} else if choice == menu[4] {
+		println!("{:#?}", getmarket());
 	}
 }
