@@ -47,7 +47,8 @@ fn systemsmenu() {
 		vec![
 				"List systems".to_string(),
 				"Get system".to_string(),
-				"List waypoints".to_string()
+				"List waypoints".to_string(),
+				"Get waypoint".to_string()
 			],
 	)
 	.prompt()
@@ -59,5 +60,7 @@ fn systemsmenu() {
 		println!("{:#?}", getsystem());
 	} else if choice == *String::from("List waypoints") {
 		println!("{:#?}", listwaypoints());
+	} else if choice == *String::from("Get waypoint") {
+		println!("{:#?}", getwaypoint());
 	}
 }

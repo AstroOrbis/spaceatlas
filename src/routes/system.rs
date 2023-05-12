@@ -3,14 +3,6 @@ use reqwest::header::AUTHORIZATION;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Waypoint {
-	symbol: String,
-	r#type: String,
-	x: i32,
-	y: i32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct System {
 	symbol: String,
 	sectorSymbol: String,
@@ -90,7 +82,7 @@ pub struct Faction {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct VerboseWaypoint {
+pub struct Waypoint {
 	symbol: String,
 	r#type: String,
 	systemSymbol: String,
@@ -109,13 +101,17 @@ pub struct Meta {
 	limit: i32,
 }
 
+
 #[derive(Serialize, Deserialize, Debug)]
-pub struct WaypointsList {
-	data: Vec<VerboseWaypoint>,
-	meta: Meta
+pub struct hasWaypointData {
+	data: Waypoint
 }
 
-
+#[derive(Serialize, Deserialize, Debug)]
+pub struct WaypointsList {
+	data: Vec<Waypoint>,
+	meta: Meta
+}
 
 pub fn listwaypoints() -> WaypointsList {
 
@@ -130,4 +126,35 @@ pub fn listwaypoints() -> WaypointsList {
 
 	res
 
+}
+
+pub fn getwaypoint() -> Waypoint {
+
+
+
+	let waypoint: String = inquire::Text::new("Please enter the waypoint identifier.").prompt().unwrap();
+
+	// This logic assumes systems are in the form XX-XXXX
+	// TODO: Patch this to get everything before the second dash
+	let system: String = waypoint.chars().take(7).collect(); 
+
+
+	let res: hasWaypointData = reqwest::blocking::Client::new()
+		.get(createpath(&format!("systems/{}/waypoints/{}", system, waypoint)))
+		.send()
+		.unwrap()
+		.json()
+		.unwrap();
+
+	Waypoint {
+		symbol: res.data.symbol,
+		r#type: res.data.r#type,
+		systemSymbol: res.data.systemSymbol,
+		x: res.data.x,
+		y: res.data.y,
+		orbitals: res.data.orbitals,
+		faction: res.data.faction,
+		traits: res.data.traits,
+		chart: res.data.chart
+	}
 }
