@@ -129,14 +129,9 @@ pub fn listwaypoints() -> WaypointsList {
 }
 
 pub fn getwaypoint() -> Waypoint {
-
-
-
 	let waypoint: String = inquire::Text::new("Please enter the waypoint identifier.").prompt().unwrap();
 
-	// This logic assumes systems are in the form XX-XXXX
-	// TODO: Patch this to get everything before the second dash
-	let system: String = waypoint.chars().take(7).collect(); 
+	let (system, _) = waypoint.rsplit_once('-').unwrap();
 
 
 	let res: hasWaypointData = reqwest::blocking::Client::new()
