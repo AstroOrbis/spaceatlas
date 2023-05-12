@@ -8,59 +8,68 @@ pub mod tools;
 use routes::agent::*;
 use routes::system::*;
 use tools::apikey::apikey;
-
+use tools::easyselect::easyselect;
 
 fn main() {
-	apikey();
-	clearscreen::clear().unwrap();
+	apikey(); // check if the API key is saet
 
-	let choice: String = inquire::Select::new(
+
+	let menu: Vec<String> = vec![
+		"Agent".to_string(), 
+		"Systems".to_string()
+	];
+
+	let choice: String = easyselect(
 		"What category would you like to query?",
-		vec!["Agent".to_string(), "Systems".to_string()],
-	)
-	.prompt()
-	.unwrap();
+		menu.to_owned(),
+	);
 
-	if choice == *String::from("Agent") {
+	if choice == menu[0] {
 		agentmenu();
-	} else if choice == *String::from("Systems") {
+	} else if choice == menu[1] {
 		systemsmenu()
 	}
 }
 
-fn agentmenu() {
-	let choice: String = inquire::Select::new(
-		"Which endpoint do you want to use?",
-		vec!["Agent information".to_string()],
-	)
-	.prompt()
-	.unwrap();
 
-	if choice == *String::from("Agent information") {
+
+
+fn agentmenu() {
+	let menu: Vec<String> = vec![
+		"Agent information".to_string()
+	];
+
+	let choice: String = easyselect(
+		"Which endpoint do you want to use?",
+		menu.to_owned()
+	);
+
+	if choice == menu[0] {
 		println!("{}", myagent());
 	}
 }
 
-fn systemsmenu() {
-	let choice: String = inquire::Select::new(
-		"Which endpoint do you want to use?",
-		vec![
-				"List systems".to_string(),
-				"Get system".to_string(),
-				"List waypoints".to_string(),
-				"Get waypoint".to_string()
-			],
-	)
-	.prompt()
-	.unwrap();
 
-	if choice == *String::from("List systems") {
+fn systemsmenu() {
+	let menu: Vec<String> = vec![
+		"List systems".to_string(),
+		"Get system".to_string(),
+		"List waypoints".to_string(),
+		"Get waypoint".to_string()
+	];
+
+	let choice: String = easyselect(
+		"Which endpoint do you want to use?",
+		menu.to_owned(),
+	);
+
+	if choice == menu[0] {
 		println!("{:#?}", listsystems());
-	} else if choice == *String::from("Get system") {
+	} else if choice == menu[1] {
 		println!("{:#?}", getsystem());
-	} else if choice == *String::from("List waypoints") {
+	} else if choice == menu[2] {
 		println!("{:#?}", listwaypoints());
-	} else if choice == *String::from("Get waypoint") {
+	} else if choice == menu[3] {
 		println!("{:#?}", getwaypoint());
 	}
 }
